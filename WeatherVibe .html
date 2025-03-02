@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherVibe - Auto & Search Weather</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: url('https://source.unsplash.com/1600x900/?sky,weather') no-repeat center/cover;
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+        }
+        input, button {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background: #ff9800;
+            color: white;
+            cursor: pointer;
+        }
+        .weather-box {
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WeatherVibe</h1>
+        <button onclick="getLocation()">📍 Get My Weather</button>
+        <br><br>
+        <input type="text" id="city" placeholder="Enter any city name...">
+        <button onclick="getWeather()">🔍 Search Weather</button>
+        <div id="weather-info"></div>
+    </div>
+
+    <script>
+        const apiKey = "ed0d7bf2bc79c18a2164593af09f025e"; // Your API Key
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showWeather, showError);
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
+
+        async function showWeather(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            fetchWeather(`lat=${lat}&lon=${lon}`);
+        }
+
+        async function getWeather() {
+            const city = document.getElementById("city").value;
+            if (!city) {
+                alert("Please enter a city name");
+                return;
+            }
+            fetchWeather(`q=${city}`);
+        }
+
+        async function fetchWeather(query) {
+            const url = `https://api.openweathermap.org/data/2.5/weather?${query}&appid=${apiKey}&units=metric`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.cod === "404") {
+                    document.getElementById("weather-info").innerHTML = "<p>City not found</p>";
+                    return;
+                }
+                displayWeather(data);
+            } catch (error) {
+                alert("Error fetching weather data.");
+            }
+        }
+
+        function displayWeather(data) {
+            document.getElementById("weather-info").innerHTML = `
+                <div class="weather-box">
+                    <h2>${data.name}</h2>
+                    <p>${data.weather[0].main}</p>
+                    <p>Temperature: ${data.main.temp}°C</p>
+                    <p>Humidity: ${data.main.humidity}%</p>
+                    <p>Wind Speed: ${data.wind.speed} m/s</p>
+                </div>
+            `;
+        }
+
+        function showError(error) {
+            alert("Location access denied. Please allow location access to fetch weather.");
+        }
+    </script>
+</body>
+</html>
